@@ -358,13 +358,13 @@ export default function transform({ source, path }, { j }, { tsConfigPath }) {
     ast
         .find(j.FunctionDeclaration)
         .forEach(({ value }) => {
-            if (value.returnType == null)
+            if (value.returnType === null)
                 value.returnType = getReturnType(esTreeNodeToTSNode(value));
         });
     ast
         .find(j.MethodDefinition, { kind: 'method' })
         .forEach(({ value }) => {
-            if (value.value.returnType == null)
+            if (value.value.returnType === null)
                 value.value.returnType = getReturnType(esTreeNodeToTSNode(value));
         });
     return ast.toSource();
@@ -415,8 +415,6 @@ export const parser = {
  * Необходимость использовать файлы для передачи конфигурации TS и исходных текстов.
 
 ## Заключение
-
-Оба подхода неидеальны.
 
 Первый подход легко добавить в существующие проекты, т.к. он не требует переопределения парсера, но отображение узлов AST, скорее всего, потребует корректировки.
 
