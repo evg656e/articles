@@ -152,20 +152,20 @@ const esTreeNodeToTSNode = ({ loc: { start: { line, column } } }) => locToTSNode
 Далее нам надо обойти все функции и методы классов, проверить возвращаемый тип и если он равен `null`, добавить аннотацию типа:
 
 ```javascript
-const root = j(source);
-root
+const ast = j(source);
+ast
     .find(j.FunctionDeclaration)
     .forEach(({ value }) => {
         if (value.returnType === null)
             value.returnType = getReturnType(esTreeNodeToTSNode(value));
     });
-root
+ast
     .find(j.ClassMethod, { kind: 'method' })
     .forEach(({ value }) => {
         if (value.returnType === null)
             value.returnType = getReturnType(esTreeNodeToTSNode(value).parent);
     });
-return root.toSource();
+return ast.toSource();
 ```
 
 Пришлось скорректировать код для получения узла метода класса, т.к. по стартовой позиции узла метода в ESTree в TSTree находится узел идентификатора метода (поэтому мы используем `parent`-а).
@@ -432,17 +432,17 @@ class TsDiagnosticError extends Error {
     }
 }
 
-function getCompilerOptionsFromConfigFile(tsConfigPath) {
+function tsGetCompilerOptionsFromConfigFile(tsConfigPath, basePath = '.') {
     const { config, error } = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
     if (error)
         throw new TsDiagnosticError(error);
-    const { options, errors } = ts.parseJsonConfigFileContent(config, getCompilerOptionsFromConfigFile.host, '.');
+    const { options, errors } = ts.parseJsonConfigFileContent(config, tsGetCompilerOptionsFromConfigFile.host, basePath);
     if (errors.length !== 0)
         throw new TsDiagnosticError(errors);
     return options;
 }
 
-getCompilerOptionsFromConfigFile.host = {
+tsGetCompilerOptionsFromConfigFile.host = {
     fileExists: ts.sys.fileExists,
     readFile: ts.sys.readFile,
     readDirectory: ts.sys.readDirectory,
